@@ -33,10 +33,10 @@ bool g_spin_charged = false;
 
 float speed_scale(float speed) { return std::clamp(speed / kFullSpeed, 0.f, 1.f); }
 
-// Each toggle loads its saved value once; unset means on, a saved "0" means off.
+// Each toggle loads its saved value once; unset means off, a saved "1" means on.
 bool load_toggle(const char* key) {
     std::string value;
-    return !(hostui::get(key, value) && value == "0");
+    return hostui::get(key, value) && value == "1";
 }
 std::atomic<bool>& roll_toggle() {
     static std::atomic<bool> on{load_toggle("rumble.roll")};
