@@ -47,8 +47,43 @@ bool Motor::active(uint64_t now) const {
 
 // ---- the shared state
 namespace {
+// Pulses from gameplay events (roll, swim, sneak), each held for its duration. A new pulse follows the
+// ones already queued, so two calls make a double pulse.
+class EventSource {
+public:
+    void pulse(float strength, uint64_t hold_us, uint64_t now) {
+        if (!(hold_us > 0)) return;
+        compact(now);
+        if (count_ >= kMax) return;
+        uint64_t start = now;
+        if (count_) start = std::max(start, entries_[count_ - 1].start + entries_[count_ - 1].hold_us);
+        entries_[count_++] = {std::clamp(strength, 0.f, 1.f), start, hold_us};
+    }
+    float level(uint64_t now) const {
+        float level = 0.f;
+        for (int i = 0; i < count_; i++)
+            if (now >= entries_[i].start && now - entries_[i].start < entries_[i].hold_us)
+                level = std::max(level, entries_[i].strength);
+        return level;
+    }
+    void reset() { count_ = 0; }
+
+private:
+    static constexpr int kMax = 2;
+    struct Entry { float strength; uint64_t start, hold_us; };
+    void compact(uint64_t now) {
+        int n = 0;
+        for (int i = 0; i < count_; i++)
+            if (now < entries_[i].start + entries_[i].hold_us) entries_[n++] = entries_[i];
+        count_ = n;
+    }
+    Entry entries_[kMax] = {};
+    int count_ = 0;
+};
+
 std::mutex g_mu;
 Motor g_motor;
+EventSource g_events;
 
 uint64_t now_us() {
     return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
@@ -92,10 +127,16 @@ void pro_motor(uint32_t chan, bool on) {
     g_motor.pro_motor(on, now);
 }
 
+void event_pulse(float strength, uint64_t hold_us) {
+    std::lock_guard lk(g_mu);
+    g_events.pulse(strength, hold_us, now_us());
+}
+
 void reset() {
     if (log_enabled()) LOG("[rumble] save state loaded: motors still");
     std::lock_guard lk(g_mu);
     g_motor.reset();
+    g_events.reset();
 }
 
 bool enabled() { return g_enabled.load(std::memory_order_relaxed); }
@@ -107,7 +148,8 @@ bool env_override() { return env() != nullptr; }
 float host_level(uint64_t window_us) {
     if (!enabled()) return 0.0f;
     std::lock_guard lk(g_mu);
-    return g_motor.level(now_us(), window_us);
+    const uint64_t now = now_us();
+    return std::max(g_motor.level(now, window_us), g_events.level(now));
 }
 
 }  // namespace rumble

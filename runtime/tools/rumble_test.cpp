@@ -127,6 +127,34 @@ int main() {
         std::this_thread::sleep_for(std::chrono::milliseconds(60));
         assert(rumble::host_level(kFrame) == 0);
     }
+    {
+        // synthetic gameplay events: a pulse is on during its hold, off after; two queue up
+        rumble::set_enabled(true);
+        rumble::reset();
+        rumble::event_pulse(0.6f, 150000);
+        assert(near(rumble::host_level(kFrame), 0.6f));
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        assert(rumble::host_level(kFrame) == 0);
+        rumble::event_pulse(0.4f, 200000);
+        rumble::event_pulse(0.4f, 200000);
+        assert(near(rumble::host_level(kFrame), 0.4f));
+        std::this_thread::sleep_for(std::chrono::milliseconds(250));  // the first has ended
+        assert(near(rumble::host_level(kFrame), 0.4f));
+        std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        assert(rumble::host_level(kFrame) == 0);
+        // the game's own motor and an event pulse combine by the larger one
+        const uint8_t on[15] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+        rumble::gamepad_pattern(0, on, 120);
+        rumble::event_pulse(0.3f, 300000);
+        assert(near(rumble::host_level(kFrame), 1));
+        rumble::gamepad_stop(0);
+        assert(near(rumble::host_level(kFrame), 0.3f));
+        rumble::set_enabled(false);
+        assert(rumble::host_level(kFrame) == 0);
+        rumble::set_enabled(true);
+        rumble::reset();
+        assert(rumble::host_level(kFrame) == 0);
+    }
     printf("rumble: all tests passed\n");
     return 0;
 }

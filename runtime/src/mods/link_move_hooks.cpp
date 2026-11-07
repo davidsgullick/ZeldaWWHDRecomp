@@ -3,6 +3,7 @@
 // setNormalSpeedF. With the mods off the game's own code runs bit for bit.
 #include "runtime.h"
 #include "mods/mods.h"
+#include "mods/rumble_events.h"
 
 extern "C" void f_02416230_orig(Cpu* c);  // daPy_lk_c::setNormalSpeedF
 
@@ -16,6 +17,7 @@ extern "C" void site_023FD39C(Cpu* c) {
     mods::move_start_effect(c, link);
     mods::move_trail_effect(c, link);
     mods::move_swim_effect(c, link);
+    mods::rumble_step(link);
     float moon_x = 0, moon_z = 0;
     const bool moon = mods::moon_jump_move(link, moon_x, moon_z);
     if (factor == 1.f && !moon) return;

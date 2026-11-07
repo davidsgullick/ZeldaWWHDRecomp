@@ -14,6 +14,7 @@ static bool flying=false;
 namespace mods {
 float link_move_factor(uint32_t){return factor;}
 void move_start_effect(Cpu*,uint32_t){} void move_trail_effect(Cpu*,uint32_t){} void move_swim_effect(Cpu*,uint32_t){}
+void rumble_step(uint32_t){}
 SidleScope sidle_scope_begin(Cpu*,bool){return {};} void sidle_scope_end(const SidleScope&){}
 bool moon_jump_move(uint32_t link,float& x,float& z){if(!flying || link!=actor)return false;x=40;z=-10;return true;}
 }

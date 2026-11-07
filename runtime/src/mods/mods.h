@@ -121,6 +121,7 @@ float link_move_factor(uint32_t link);
 void move_start_effect(Cpu* c, uint32_t link); // consume a new grounded sprint's one-shot dust burst
 void move_trail_effect(Cpu* c, uint32_t link); // small puffs behind the feet while running under boost
 void move_swim_effect(Cpu* c, uint32_t link);  // splash per arm pull and a foam trail while swimming under boost
+void rumble_step(uint32_t link);               // gameplay-event motor pulses: roll, swim, crouch-sneak
 
 // ---- traversal mods (traversal.cpp; issues #95, #96). Factors are clamped to 1x..3x. ----
 bool ladder_speed();                      // faster ladder climbing (the clips play faster)

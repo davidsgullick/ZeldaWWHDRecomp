@@ -19,6 +19,7 @@
 #include "packages.h"
 #include "game_settings_graphics.h"
 #include "player_name.h"
+#include "rumble_events.h"
 #include "../aspect.h"
 #include "../dynres.h"
 #include "../framegen.h"
@@ -327,6 +328,42 @@ void register_controls() {
         it.help = "The controller rumbles when the game asks for it.";
         it.get = [] { return rumble::enabled() ? 1.0f : 0.0f; };
         it.set = [](float v) { set_rumble(v >= 0.5f); };
+        it.enabled = [] { return input::has_rumble(); };
+        add(std::move(it));
+    }
+    {
+        Item it;
+        it.id = "controls.rumble-roll", it.tab = "controls", it.label = "Rumble: roll", it.kind = Kind::Toggle;
+        it.help = "A pulse partway through a roll.";
+        it.get = [] { return mods::rumble_roll() ? 1.0f : 0.0f; };
+        it.set = [](float v) { mods::set_rumble_roll(v >= 0.5f); };
+        it.enabled = [] { return input::has_rumble(); };
+        add(std::move(it));
+    }
+    {
+        Item it;
+        it.id = "controls.rumble-swim", it.tab = "controls", it.label = "Rumble: swim", it.kind = Kind::Toggle;
+        it.help = "A pulse every half second or so while swimming.";
+        it.get = [] { return mods::rumble_swim() ? 1.0f : 0.0f; };
+        it.set = [](float v) { mods::set_rumble_swim(v >= 0.5f); };
+        it.enabled = [] { return input::has_rumble(); };
+        add(std::move(it));
+    }
+    {
+        Item it;
+        it.id = "controls.rumble-crawl", it.tab = "controls", it.label = "Rumble: crawl", it.kind = Kind::Toggle;
+        it.help = "Short pulses while crawling.";
+        it.get = [] { return mods::rumble_crawl() ? 1.0f : 0.0f; };
+        it.set = [](float v) { mods::set_rumble_crawl(v >= 0.5f); };
+        it.enabled = [] { return input::has_rumble(); };
+        add(std::move(it));
+    }
+    {
+        Item it;
+        it.id = "controls.rumble-spin", it.tab = "controls", it.label = "Rumble: spin", it.kind = Kind::Toggle;
+        it.help = "A pulse while charging a spin attack, a stronger one on release.";
+        it.get = [] { return mods::rumble_spin() ? 1.0f : 0.0f; };
+        it.set = [](float v) { mods::set_rumble_spin(v >= 0.5f); };
         it.enabled = [] { return input::has_rumble(); };
         add(std::move(it));
     }

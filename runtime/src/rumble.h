@@ -52,6 +52,10 @@ void gamepad_stop(uint32_t chan);
 void pro_motor(uint32_t chan, bool on);
 void reset();                    // save state loaded: the game's earlier requests no longer apply
 
+// ---- synthetic gameplay events (game logic thread): a pulse of 0..1 for hold_us, starting now or
+// after the pulses already queued (at most two). host_level uses the larger of this and the game.
+void event_pulse(float strength, uint64_t hold_us);
+
 // ---- the option (any thread)
 bool enabled();
 void set_enabled(bool on);       // off stops the host motors with the host's next update
